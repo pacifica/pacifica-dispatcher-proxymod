@@ -1,0 +1,11 @@
+celery
+cherrypy
+codeclimate-test-reporter
+coverage>4.0,<4.4
+peewee
+pep257
+pre-commit
+pylint<2.0
+pytest
+requests
+setuptools
