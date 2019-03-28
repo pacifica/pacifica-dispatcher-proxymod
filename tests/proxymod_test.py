@@ -45,7 +45,7 @@ class ProxTestCase(unittest.TestCase):
         return
 
     def test_proxymod_path(self):
-        proxymod_path = Path.parse_file(os.path.join(os.path.dirname(__file__), '..', 'jsonpath2', 'proxymod.txt'))
+        proxymod_path = Path.parse_file(os.path.join(os.path.dirname(__file__), '..',  'pacifica', 'dispatcher_proxymod', 'jsonpath2', 'proxymod.txt'))
 
         self.assertEqual(1, len(list(proxymod_path.match(self.event_data))))
 
