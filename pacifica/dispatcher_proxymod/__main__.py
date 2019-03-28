@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# pacifica-dispatcher-proxymod: pacifica/dispatcher/proxymod/__main__.py
+# pacifica-dispatcher-proxymod: pacifica/dispatcher_proxymod/__main__.py
 #
 # Copyright (c) 2019, Battelle Memorial Institute
 # All rights reserved.
@@ -25,7 +25,7 @@ ReceiveTaskModel.create_table(safe=True)
 celery_app = ReceiveTaskModel.create_celery_app(router, 'pacifica.dispatcher_proxymod.app', 'pacifica.dispatcher_proxymod.tasks.receive', backend=os.getenv(
     'BACKEND_URL', 'rpc://'), broker=os.getenv('BROKER_URL', 'pyamqp://'))
 
-application = ReceiveTaskModel.create_cherrypy_app(celery_app.tasks['pacifica.dispatcher.proxymod.tasks.receive'])
+application = ReceiveTaskModel.create_cherrypy_app(celery_app.tasks['pacifica.dispatcher_proxymod.tasks.receive'])
 
 
 def main() -> None:

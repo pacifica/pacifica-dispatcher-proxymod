@@ -60,8 +60,8 @@ There are three commands needed to start up the services.
 Perform these steps in three separate terminals.
 
  1. `docker-compose up rabbit`
- 2. `env DATABASE_URL="sqliteext:///db.sqlite3" celery -A "pacifica.dispatcher.proxymod.__main__:celery_app" worker -l info`
- 3. `env DATABASE_URL="sqliteext:///db.sqlite3" python3 -m "pacifica.dispatcher.proxymod.__main__"`
+ 2. `env DATABASE_URL="sqliteext:///db.sqlite3" celery -A "pacifica.dispatcher_proxymod.__main__:celery_app" worker -l info`
+ 3. `env DATABASE_URL="sqliteext:///db.sqlite3" python3 -m "pacifica.dispatcher_proxymod.__main__"`
 
 ## Testing
 
