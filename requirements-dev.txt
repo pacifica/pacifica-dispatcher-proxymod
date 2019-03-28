@@ -1,11 +1,7 @@
-celery
-cherrypy
-codeclimate-test-reporter
-coverage>4.0,<4.4
-peewee
+-r requirements.txt
+coverage
 pep257
 pre-commit
-pylint<2.0
+pylint
 pytest
-requests
 setuptools

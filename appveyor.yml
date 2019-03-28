@@ -5,7 +5,6 @@ pull_requests:
 environment:
   BROKER_URL: redis://localhost:6379/0
   matrix:
-    - PYTHON: C:\Python27-x64
     - PYTHON: C:\Python36-x64
 
 install:
@@ -28,8 +27,9 @@ test_script:
   - ps: >
       mkdir C:\tmp; C:\pacifica\Scripts\activate.ps1;
       pre-commit run -a;
-      $celery_proc = Start-Process C:\pacifica\Scripts\coverage.exe -ArgumentList "run --include=pacifica/* -p -m celery -A 'pacifica.dispatcher.proxymod.__main__:celery_app' worker -l info -c 1 -P solo" -RedirectStandardError celery-error.log -RedirectStandardOutput celery-output.log;
-      coverage run --include='pacifica/*' -m pytest -v;
+      pip install .; cd tests;
+      $celery_proc = Start-Process C:\pacifica\Scripts\coverage.exe -ArgumentList "run --include=*/site-packages/pacifica/dispatcher/proxymod/* -p -m celery -A 'pacifica.dispatcher.proxymod.__main__:celery_app' worker -l info -c 1 -P solo" -RedirectStandardError celery-error.log -RedirectStandardOutput celery-output.log;
+      coverage run --include='*/site-packages/pacifica/dispatcher/proxymod/*' -m pytest -xv;
       python -m celery -A 'pacifica.dispatcher.proxymod.__main__:celery_app' control shutdown;
       $celery_proc | Wait-Process;
       ls .coverage* | %{ python -m coverage combine -a $_.name };
