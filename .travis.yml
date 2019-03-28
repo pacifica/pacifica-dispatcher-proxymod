@@ -13,9 +13,9 @@ env:
 script:
 - pip install .
 - cd tests
-- coverage run --include='*/site-packages/pacifica/dispatcher/proxymod/*' -p -m celery -A 'pacifica.dispatcher.proxymod.__main__:celery_app' worker -c 1 -P solo -l info &
-- coverage run --include='*/site-packages/pacifica/dispatcher/proxymod/*' -m pytest -xv
-- celery -A 'pacifica.dispatcher.proxymod.__main__:celery_app' control shutdown || true
+- coverage run --include='*/site-packages/pacifica/dispatcher_proxymod/*' -p -m celery -A 'pacifica.dispatcher_proxymod.__main__:celery_app' worker -c 1 -P solo -l info &
+- coverage run --include='*/site-packages/pacifica/dispatcher_proxymod/*' -m pytest -xv
+- celery -A 'pacifica.dispatcher_proxymod.__main__:celery_app' control shutdown || true
 - coverage combine -a .coverage*
 - coverage report -m --fail-under 100
 
