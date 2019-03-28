@@ -51,7 +51,9 @@ class InvalidModelProxEventHandlerError(ProxEventHandlerError):
         self.reason = reason
 
     def __str__(self) -> str:
-        return 'proxymod model for file \'{0}\' is invalid: {1}'.format(self.file.path.replace('\'', '\\\''), str(self.reason))
+        return 'proxymod model for file \'{0}\' is invalid: {1}'.format(
+            self.file.path.replace('\'', '\\\''), str(self.reason)
+        )
 
 
 __all__ = ('ProxEventHandlerError', 'ConfigNotFoundProxEventHandlerError',

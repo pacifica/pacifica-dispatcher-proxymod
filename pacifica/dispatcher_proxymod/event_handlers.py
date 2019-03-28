@@ -23,7 +23,8 @@ from pacifica.dispatcher.event_handlers import EventHandler
 from pacifica.dispatcher.models import File, Transaction, TransactionKeyValue
 from pacifica.dispatcher.uploader_runners import UploaderRunner
 
-from .exceptions import ConfigNotFoundProxEventHandlerError, InvalidConfigProxEventHandlerError, InvalidModelProxEventHandlerError
+from .exceptions import ConfigNotFoundProxEventHandlerError, InvalidConfigProxEventHandlerError
+from .exceptions import InvalidModelProxEventHandlerError
 
 RE_PATTERN_PROXYMOD_TRANSACTION_KEY_VALUE_QUAD_ = re.compile(r'^' + re.escape('.').join([
     re.escape('proxymod'),
@@ -141,7 +142,9 @@ class ProxEventHandler(EventHandler):
         _in_file_two = config_by_config_id.get('config_1', {}).get('INPUTS', {}).get('in_file_two', None)
 
         for file_inst in file_insts:
-            if ('text/csv' == file_inst.mimetype) and (file_inst.subdir is not None) and (_in_dir == file_inst.subdir) and (file_inst.name is not None) and ((_in_file_one == file_inst.name) or (_in_file_two == file_inst.name)):
+            if ('text/csv' == file_inst.mimetype) and (file_inst.subdir is not None) and \
+               (_in_dir == file_inst.subdir) and (file_inst.name is not None) and \
+               ((_in_file_one == file_inst.name) or (_in_file_two == file_inst.name)):
                 input_file_insts.append(file_inst)
             elif ('text/x-python' == file_inst.mimetype) and ('models/' == file_inst.subdir):
                 model_file_insts.append(file_inst)
@@ -236,7 +239,8 @@ class ProxEventHandler(EventHandler):
                                 with open(os.path.join(uploader_tempdir_name, 'stderr.log'), mode='w') as stderr_file:
                                     with contextlib.redirect_stdout(stdout_file):
                                         with contextlib.redirect_stderr(stderr_file):
-                                            for model_file_inst, model_file_func in zip(model_file_insts, model_file_funcs):
+                                            inst_func_zip = zip(model_file_insts, model_file_funcs)
+                                            for model_file_inst, model_file_func in inst_func_zip:
                                                 try:
                                                     model_file_func(config_1_file.name,
                                                                     config_2_file.name, config_3_file.name)
@@ -244,14 +248,19 @@ class ProxEventHandler(EventHandler):
                                                     raise InvalidModelProxEventHandlerError(
                                                         event, model_file_inst, reason)
 
-                # (bundle, job_id, state) = self.uploader_runner.upload(uploader_tempdir_name, transaction=Transaction(submitter=transaction_inst.submitter, instrument=transaction_inst.instrument, project=transaction_inst.project), transaction_key_values=[TransactionKeyValue(key='Transactions._id', value=transaction_inst._id)])
-
                 with open(os.path.join(uploader_tempdir_name, 'upload-stdout.log'), mode='w') as uploader_stdout_file:
                     with open(os.path.join(uploader_tempdir_name, 'upload-stderr.log'), mode='w') as uploader_stderr_file:
                         with contextlib.redirect_stdout(uploader_stdout_file):
                             with contextlib.redirect_stderr(uploader_stderr_file):
-                                (bundle, job_id, state) = self.uploader_runner.upload(uploader_tempdir_name, transaction=Transaction(submitter=transaction_inst.submitter,
-                                                                                                                                     instrument=transaction_inst.instrument, project=transaction_inst.project), transaction_key_values=[TransactionKeyValue(key='Transactions._id', value=transaction_inst._id)])
+                                (bundle, job_id, state) = self.uploader_runner.upload(
+                                    uploader_tempdir_name, transaction=Transaction(
+                                        submitter=transaction_inst.submitter,
+                                        instrument=transaction_inst.instrument,
+                                        project=transaction_inst.project
+                                    ), transaction_key_values=[
+                                        TransactionKeyValue(key='Transactions._id', value=transaction_inst._id)
+                                    ]
+                                )
 
                 pass
 
