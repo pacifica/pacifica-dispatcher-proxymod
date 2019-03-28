@@ -18,8 +18,8 @@ from jsonpath2.path import Path
 from pacifica.dispatcher.downloader_runners import LocalDownloaderRunner
 from pacifica.dispatcher.uploader_runners import LocalUploaderRunner
 
-from ..event_handlers import ProxEventHandler
-from ..router import router
+from pacifica.dispatcher_proxymod.event_handlers import ProxEventHandler
+from pacifica.dispatcher_proxymod.router import router
 
 
 class ProxTestCase(unittest.TestCase):

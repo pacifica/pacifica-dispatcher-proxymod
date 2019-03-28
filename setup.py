@@ -27,7 +27,7 @@ setup(
     namespace_packages=['pacifica'],
     entry_points={
         'console_scripts': [
-            'pacifica-dispatcher-proxymod=pacifica.dispatcher.proxymod.__main__:main',
+            'pacifica-dispatcher-proxymod=pacifica.dispatcher_proxymod.__main__:main',
         ],
     },
     install_requires=[str(ir.req) for ir in INSTALL_REQS]

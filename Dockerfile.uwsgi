@@ -6,4 +6,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir uwsgi pymysql
 COPY . .
 EXPOSE 8069
-ENTRYPOINT ["uwsgi", "--http-socket", "0.0.0.0:8069", "--master", "--die-on-term", "--wsgi-file", "/usr/src/app/pacifica/dispatcher/proxymod/__main__.py"]
+ENTRYPOINT ["uwsgi", "--http-socket", "0.0.0.0:8069", "--master", "--die-on-term", "--wsgi-file", "/usr/src/app/pacifica/dispatcher_proxymod/__main__.py"]
