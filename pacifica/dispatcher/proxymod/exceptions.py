@@ -14,11 +14,13 @@ from cloudevents.model import Event
 
 from pacifica.dispatcher.models import File
 
+
 class ProxEventHandlerError(BaseException):
     def __init__(self, event: Event) -> None:
         super(ProxEventHandlerError, self).__init__()
 
         self.event = event
+
 
 class ConfigNotFoundProxEventHandlerError(ProxEventHandlerError):
     def __init__(self, event: Event, config_id: str) -> None:
@@ -28,6 +30,7 @@ class ConfigNotFoundProxEventHandlerError(ProxEventHandlerError):
 
     def __str__(self) -> str:
         return 'proxymod configuration \'{0}\' not found'.format(self.config_id.replace('\'', '\\\''))
+
 
 class InvalidConfigProxEventHandlerError(ProxEventHandlerError):
     def __init__(self, event: Event, config_id: str, config: typing.Dict[str, typing.Dict[str, typing.Any]]) -> None:
@@ -39,6 +42,7 @@ class InvalidConfigProxEventHandlerError(ProxEventHandlerError):
     def __str__(self) -> str:
         return 'proxymod configuration \'{0}\' is invalid'.format(self.config_id.replace('\'', '\\\''))
 
+
 class InvalidModelProxEventHandlerError(ProxEventHandlerError):
     def __init__(self, event: Event, file: File, reason: Exception) -> None:
         super(InvalidModelProxEventHandlerError, self).__init__(event)
@@ -49,4 +53,6 @@ class InvalidModelProxEventHandlerError(ProxEventHandlerError):
     def __str__(self) -> str:
         return 'proxymod model for file \'{0}\' is invalid: {1}'.format(self.file.path.replace('\'', '\\\''), str(self.reason))
 
-__all__ = ('ProxEventHandlerError', 'ConfigNotFoundProxEventHandlerError', 'InvalidConfigProxEventHandlerError', 'InvalidModelProxEventHandlerError', )
+
+__all__ = ('ProxEventHandlerError', 'ConfigNotFoundProxEventHandlerError',
+           'InvalidConfigProxEventHandlerError', 'InvalidModelProxEventHandlerError', )

@@ -21,9 +21,11 @@ from pacifica.dispatcher.uploader_runners import LocalUploaderRunner
 from ..event_handlers import ProxEventHandler
 from ..router import router
 
+
 class ProxTestCase(unittest.TestCase):
     def setUp(self):
-        self.basedir_name = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', 'test_files', 'C234-1234-1234'))
+        self.basedir_name = os.path.abspath(os.path.join(os.path.dirname(
+            __file__), '..', '..', '..', '..', 'test_files', 'C234-1234-1234'))
 
         with open(os.path.join(self.basedir_name, 'event.json'), mode='r') as event_file:
             self.event_data = json.load(event_file)
@@ -54,6 +56,7 @@ class ProxTestCase(unittest.TestCase):
         self.assertEqual(1, len(list(router.match(self.event_data))))
 
         return
+
 
 if __name__ == '__main__':
     unittest.main()

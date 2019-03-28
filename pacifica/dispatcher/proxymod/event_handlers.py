@@ -27,9 +27,9 @@ from .exceptions import ConfigNotFoundProxEventHandlerError, InvalidConfigProxEv
 
 RE_PATTERN_PROXYMOD_TRANSACTION_KEY_VALUE_QUAD_ = re.compile(r'^' + re.escape('.').join([
     re.escape('proxymod'),
-    r'([^' + re.escape('.') + r']+)', # 1. config_id
-    r'([^' + re.escape('.') + r']+)', # 2. header_name
-    r'([^' + re.escape('.') + r']+)', # 3. subheader_name
+    r'([^' + re.escape('.') + r']+)',  # 1. config_id
+    r'([^' + re.escape('.') + r']+)',  # 2. header_name
+    r'([^' + re.escape('.') + r']+)',  # 3. subheader_name
 ]) + r'$')
 
 RE_GROUP_PROXYMOD_TRANSACTION_KEY_VALUE_QUAD_CONFIG_ID_ = 1
@@ -37,6 +37,7 @@ RE_GROUP_PROXYMOD_TRANSACTION_KEY_VALUE_QUAD_CONFIG_ID_ = 1
 RE_GROUP_PROXYMOD_TRANSACTION_KEY_VALUE_QUAD_HEADER_NAME_ = 2
 
 RE_GROUP_PROXYMOD_TRANSACTION_KEY_VALUE_QUAD_SUBHEADER_NAME_ = 3
+
 
 def _format_proxymod_config(config: typing.Dict[str, typing.Dict[str, typing.Any]] = {}) -> str:
     lines = []
@@ -50,6 +51,7 @@ def _format_proxymod_config(config: typing.Dict[str, typing.Dict[str, typing.Any
     lines.append('')
 
     return os.linesep.join(lines)
+
 
 def _is_valid_proxymod_config(config: typing.Dict[str, typing.Dict[str, typing.Any]] = {}) -> bool:
     for header_name, header_values in config.items():
@@ -84,6 +86,7 @@ def _is_valid_proxymod_config(config: typing.Dict[str, typing.Dict[str, typing.A
 
     return True
 
+
 def _to_proxymod_config_by_config_id(transaction_key_values: typing.List[TransactionKeyValue] = []) -> typing.Dict[str, typing.Dict[str, typing.Dict[str, typing.Any]]]:
     config_by_config_id = {}
 
@@ -105,6 +108,7 @@ def _to_proxymod_config_by_config_id(transaction_key_values: typing.List[Transac
                 config_by_config_id[config_id][header_name][subheader_name] = transaction_key_value.value
 
     return config_by_config_id
+
 
 class ProxEventHandler(EventHandler):
     def __init__(self, downloader_runner: DownloaderRunner, uploader_runner: UploaderRunner) -> None:
@@ -153,7 +157,8 @@ class ProxEventHandler(EventHandler):
                     with open(os.path.join(uploader_tempdir_name, 'download-stderr.log'), mode='w') as downloader_stderr_file:
                         with contextlib.redirect_stdout(downloader_stdout_file):
                             with contextlib.redirect_stderr(downloader_stderr_file):
-                                model_file_openers = self.downloader_runner.download(downloader_tempdir_name, model_file_insts)
+                                model_file_openers = self.downloader_runner.download(
+                                    downloader_tempdir_name, model_file_insts)
 
                 model_file_funcs = []
 
@@ -183,7 +188,8 @@ class ProxEventHandler(EventHandler):
                     with open(os.path.join(uploader_tempdir_name, 'download-stderr.log'), mode='a') as downloader_stderr_file:
                         with contextlib.redirect_stdout(downloader_stdout_file):
                             with contextlib.redirect_stderr(downloader_stderr_file):
-                                input_file_openers = self.downloader_runner.download(downloader_tempdir_name, input_file_insts)
+                                input_file_openers = self.downloader_runner.download(
+                                    downloader_tempdir_name, input_file_insts)
 
                 abspath_config_by_config_id = copy.deepcopy(config_by_config_id)
 
@@ -198,22 +204,26 @@ class ProxEventHandler(EventHandler):
 
                     if 'OUTPUTS' in config:
                         if 'out_dir' in config['OUTPUTS']:
-                            config['OUTPUTS']['out_dir'] = os.path.abspath(os.path.join(uploader_tempdir_name, config['OUTPUTS']['out_dir']))
+                            config['OUTPUTS']['out_dir'] = os.path.abspath(
+                                os.path.join(uploader_tempdir_name, config['OUTPUTS']['out_dir']))
 
                 for config_id, config in config_by_config_id.items():
                     with open(os.path.join(uploader_tempdir_name, '{0}.ini'.format(config_id)), mode='w') as config_file:
                         config_file.write(_format_proxymod_config(config))
 
                 with tempfile.NamedTemporaryFile(suffix='.ini') as config_1_file:
-                    config_1_file.write(bytes(_format_proxymod_config(abspath_config_by_config_id['config_1']), 'utf-8'))
+                    config_1_file.write(bytes(_format_proxymod_config(
+                        abspath_config_by_config_id['config_1']), 'utf-8'))
                     config_1_file.seek(0)
 
                     with tempfile.NamedTemporaryFile(suffix='.ini') as config_2_file:
-                        config_2_file.write(bytes(_format_proxymod_config(abspath_config_by_config_id['config_2']), 'utf-8'))
+                        config_2_file.write(bytes(_format_proxymod_config(
+                            abspath_config_by_config_id['config_2']), 'utf-8'))
                         config_2_file.seek(0)
 
                         with tempfile.NamedTemporaryFile(suffix='.ini') as config_3_file:
-                            config_3_file.write(bytes(_format_proxymod_config(abspath_config_by_config_id['config_3']), 'utf-8'))
+                            config_3_file.write(bytes(_format_proxymod_config(
+                                abspath_config_by_config_id['config_3']), 'utf-8'))
                             config_3_file.seek(0)
 
                             # for model_file_inst, model_file_func in zip(model_file_insts, model_file_funcs):
@@ -228,9 +238,11 @@ class ProxEventHandler(EventHandler):
                                         with contextlib.redirect_stderr(stderr_file):
                                             for model_file_inst, model_file_func in zip(model_file_insts, model_file_funcs):
                                                 try:
-                                                    model_file_func(config_1_file.name, config_2_file.name, config_3_file.name)
+                                                    model_file_func(config_1_file.name,
+                                                                    config_2_file.name, config_3_file.name)
                                                 except Exception as reason:
-                                                    raise InvalidModelProxEventHandlerError(event, model_file_inst, reason)
+                                                    raise InvalidModelProxEventHandlerError(
+                                                        event, model_file_inst, reason)
 
                 # (bundle, job_id, state) = self.uploader_runner.upload(uploader_tempdir_name, transaction=Transaction(submitter=transaction_inst.submitter, instrument=transaction_inst.instrument, project=transaction_inst.project), transaction_key_values=[TransactionKeyValue(key='Transactions._id', value=transaction_inst._id)])
 
@@ -238,12 +250,14 @@ class ProxEventHandler(EventHandler):
                     with open(os.path.join(uploader_tempdir_name, 'upload-stderr.log'), mode='w') as uploader_stderr_file:
                         with contextlib.redirect_stdout(uploader_stdout_file):
                             with contextlib.redirect_stderr(uploader_stderr_file):
-                                (bundle, job_id, state) = self.uploader_runner.upload(uploader_tempdir_name, transaction=Transaction(submitter=transaction_inst.submitter, instrument=transaction_inst.instrument, project=transaction_inst.project), transaction_key_values=[TransactionKeyValue(key='Transactions._id', value=transaction_inst._id)])
+                                (bundle, job_id, state) = self.uploader_runner.upload(uploader_tempdir_name, transaction=Transaction(submitter=transaction_inst.submitter,
+                                                                                                                                     instrument=transaction_inst.instrument, project=transaction_inst.project), transaction_key_values=[TransactionKeyValue(key='Transactions._id', value=transaction_inst._id)])
 
                 pass
 
             pass
 
         pass
+
 
 __all__ = ('ProxEventHandler', )
