@@ -1,5 +1,6 @@
 -r requirements.txt
 coverage
+git+https://github.com/IMMM-SFA/proxymod.git
 pep257
 pre-commit
 pylint

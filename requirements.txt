@@ -1,7 +1,6 @@
 celery
 cherrypy
 cloudevents-python
-git+https://github.com/IMMM-SFA/proxymod.git
 jsonpath2
 pacifica-cli
 pacifica-dispatcher
