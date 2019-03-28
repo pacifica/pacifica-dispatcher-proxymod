@@ -30,6 +30,8 @@ setup(
     author_email='mark.borkum@pnnl.gov',
     packages=find_packages(),
     namespace_packages=['pacifica'],
+    include_package_data=True,
+    package_data={'': ['*.txt']},
     entry_points={
         'console_scripts': [
             'pacifica-dispatcher-proxymod=pacifica.dispatcher_proxymod.__main__:main',
