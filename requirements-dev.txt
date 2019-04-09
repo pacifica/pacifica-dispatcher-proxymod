@@ -5,4 +5,5 @@ pep257
 pre-commit
 pylint
 pytest
+mock
 setuptools

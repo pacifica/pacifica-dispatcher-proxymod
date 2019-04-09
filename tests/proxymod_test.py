@@ -12,14 +12,18 @@ import json
 import os
 import unittest
 
+from mock import patch
 from cloudevents.model import Event
 from jsonpath2.path import Path
 
 from pacifica.dispatcher.downloader_runners import LocalDownloaderRunner
 from pacifica.dispatcher.uploader_runners import LocalUploaderRunner
 
-from pacifica.dispatcher_proxymod.event_handlers import ProxEventHandler
+from pacifica.dispatcher_proxymod.event_handlers import ProxEventHandler, _is_valid_proxymod_config
+from pacifica.dispatcher_proxymod.event_handlers import _assert_valid_proxevent
 from pacifica.dispatcher_proxymod.router import router
+from pacifica.dispatcher_proxymod.exceptions import ConfigNotFoundProxEventHandlerError
+from pacifica.dispatcher_proxymod.exceptions import InvalidConfigProxEventHandlerError
 
 
 class ProxTestCase(unittest.TestCase):
@@ -51,6 +55,20 @@ class ProxTestCase(unittest.TestCase):
         """Test the router."""
         self.assertEqual(1, len(list(router.match(self.event_data))))
 
+    def test_bad_configs(self):
+        """Test some bad configuration files see if we catch them."""
+        self.assertFalse(_is_valid_proxymod_config({'foo': {'bar': ''}}))
+        self.assertFalse(_is_valid_proxymod_config({'PROJECTS': {'bar': ''}}))
+        self.assertFalse(_is_valid_proxymod_config({'PROJECTS': {'runtime': ''}}))
+
+    @patch('pacifica.dispatcher_proxymod.event_handlers._to_proxymod_config_by_config_id')
+    def test_bad_configs_exception(self, config_id_method):
+        config_id_method.return_value = {'config_1': {}}
+        with self.assertRaises(ConfigNotFoundProxEventHandlerError):
+            _assert_valid_proxevent({}, self.event_data)
+        config_id_method.return_value = {'config_1': {'foo': {}}, 'config_2': {}, 'config_3': {}}
+        with self.assertRaises(InvalidConfigProxEventHandlerError):
+            _assert_valid_proxevent({}, self.event_data)
 
 if __name__ == '__main__':
     unittest.main()
