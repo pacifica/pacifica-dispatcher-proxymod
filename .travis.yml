@@ -21,6 +21,7 @@ jobs:
     - cd tests
     - coverage run --include='*/site-packages/pacifica/dispatcher_proxymod/*' -p -m celery -A 'pacifica.dispatcher_proxymod.__main__:celery_app' worker -c 1 -P solo -l info &
     - coverage run --include='*/site-packages/pacifica/dispatcher_proxymod/*' -m pytest -xv
+    - coverage run --include='*/site-packages/pacifica/dispatcher_proxymod/*' -a -m pacifica.dispatcher_proxymod --stop-after-a-moment
     - celery -A 'pacifica.dispatcher_proxymod.__main__:celery_app' control shutdown || true
     - coverage combine -a .coverage*
     - coverage report -m --fail-under 100

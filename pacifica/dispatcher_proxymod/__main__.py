@@ -10,6 +10,8 @@
 """Main method for starting proxymod handler."""
 import argparse
 import os
+from time import sleep
+from threading import Thread
 
 import cherrypy
 import playhouse.db_url
@@ -32,6 +34,20 @@ application = ReceiveTaskModel.create_cherrypy_app(celery_app.tasks['pacifica.di
 # pylint: enable=invalid-name
 
 
+def stop_later(doit=False):
+    """Used for unit testing stop after 10 seconds."""
+    if not doit:  # pragma: no cover
+        return
+    
+    def sleep_then_exit():
+        """sleep for 10 seconds then call cherrypy exit."""
+        sleep(5)
+    cherrypy.engine.exit()
+    sleep_thread = Thread(target=sleep_then_exit)
+    sleep_thread.daemon = True
+    sleep_thread.start()
+
+
 def main() -> None:
     """Main method for starting proxymod handler server."""
     parser = argparse.ArgumentParser(description='Start the CherryPy application and listen for connections.')
@@ -41,9 +57,11 @@ def main() -> None:
                         help='The hostname or IP address on which to listen for connections.')
     parser.add_argument('--port', metavar='PORT', dest='port', type=int, default=8069,
                         help='The TCP port on which to listen for connections.')
-
+    parser.add_argument('--stop-after-a-moment', help=SUPPRESS,
+                        default=False, dest='stop_later',
+                        action='store_true')
     args = parser.parse_args()
-
+    stop_later(args.stop_later)
     cherrypy.config.update({
         'global': {
             'server.socket_host': args.host,

@@ -30,6 +30,7 @@ test_script:
       pip install .; cd tests;
       $celery_proc = Start-Process C:\pacifica\Scripts\coverage.exe -ArgumentList "run --include=*/site-packages/pacifica/dispatcher_proxymod/* -p -m celery -A 'pacifica.dispatcher_proxymod.__main__:celery_app' worker -l info -c 1 -P solo" -RedirectStandardError celery-error.log -RedirectStandardOutput celery-output.log;
       coverage run --include='*/site-packages/pacifica/dispatcher_proxymod/*' -m pytest -xv;
+      coverage run --include='*/site-packages/pacifica/dispatcher_proxymod/*' -a -m pacifica.dispatcher_proxymod --stop-after-a-moment;
       python -m celery -A 'pacifica.dispatcher_proxymod.__main__:celery_app' control shutdown;
       $celery_proc | Wait-Process;
       ls .coverage* | %{ python -m coverage combine -a $_.name };
