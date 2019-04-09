@@ -1,0 +1,37 @@
+version: 0.1.{build}
+pull_requests:
+  do_not_increment_build_number: true
+
+environment:
+  BROKER_URL: redis://localhost:6379/0
+  matrix:
+    - PYTHON: C:\Python36-x64
+
+install:
+  - ps: >
+      & "$env:PYTHON\python.exe" -m virtualenv C:\pacifica;
+      C:\pacifica\Scripts\activate.ps1;
+      python -m pip install --upgrade pip setuptools wheel;
+      python -m pip install -r requirements-dev.txt;
+      python -m pip install 'celery[eventlet]' 'celery[redis]' redis eventlet;
+
+before_test:
+  - ps: >
+      nuget install redis-64 -excludeversion;
+      redis-64\tools\redis-server.exe --service-install;
+      redis-64\tools\redis-server.exe --service-start;
+
+build: off
+
+test_script:
+  - ps: >
+      mkdir C:\tmp; C:\pacifica\Scripts\activate.ps1;
+      pre-commit run -a;
+      pip install .; cd tests;
+      $celery_proc = Start-Process C:\pacifica\Scripts\coverage.exe -ArgumentList "run --include=*/site-packages/pacifica/dispatcher_proxymod/* -p -m celery -A 'pacifica.dispatcher_proxymod.__main__:celery_app' worker -l info -c 1 -P solo" -RedirectStandardError celery-error.log -RedirectStandardOutput celery-output.log;
+      coverage run --include='*/site-packages/pacifica/dispatcher_proxymod/*' -m pytest -xv;
+      coverage run --include='*/site-packages/pacifica/dispatcher_proxymod/*' -a -m pacifica.dispatcher_proxymod --stop-after-a-moment;
+      python -m celery -A 'pacifica.dispatcher_proxymod.__main__:celery_app' control shutdown;
+      $celery_proc | Wait-Process;
+      ls .coverage* | %{ python -m coverage combine -a $_.name };
+      coverage report -m --fail-under=100;

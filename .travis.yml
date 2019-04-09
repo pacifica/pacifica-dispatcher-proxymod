@@ -1,0 +1,31 @@
+language: python
+python:
+- 3.6
+services:
+- redis-server
+stages:
+- lint
+- test
+
+env:
+  BROKER_URL: redis://localhost:6379/0
+
+jobs:
+  include:
+  - stage: lint
+    python: 3.6
+    script: pre-commit run -a
+  - stage: test
+    script:
+    - pip install .
+    - cd tests
+    - coverage run --include='*/site-packages/pacifica/dispatcher_proxymod/*' -p -m celery -A 'pacifica.dispatcher_proxymod.__main__:celery_app' worker -c 1 -P solo -l info &
+    - coverage run --include='*/site-packages/pacifica/dispatcher_proxymod/*' -m pytest -xv
+    - coverage run --include='*/site-packages/pacifica/dispatcher_proxymod/*' -a -m pacifica.dispatcher_proxymod --stop-after-a-moment
+    - celery -A 'pacifica.dispatcher_proxymod.__main__:celery_app' control shutdown || true
+    - coverage combine -a .coverage*
+    - coverage report -m --fail-under 100
+
+install:
+- pip install -r requirements-dev.txt
+- pip install 'celery[redis]'

@@ -1,0 +1,156 @@
+{
+  "cloudEventsVersion": "0.1",
+  "contentType": "application/json",
+  "data": [
+    {
+      "destinationTable": "Transactions._id",
+      "value": -1
+    },
+    {
+      "destinationTable": "Transactions.submitter",
+      "value": -1
+    },
+    {
+      "destinationTable": "Transactions.proposal",
+      "value": -1
+    },
+    {
+      "destinationTable": "Transactions.instrument",
+      "value": -1
+    },
+    {
+      "destinationTable": "TransactionKeyValue",
+      "key": "proxymod.task",
+      "value": "advance"
+    },
+    {
+      "destinationTable": "TransactionKeyValue",
+      "key": "proxymod.version",
+      "value": "v0.0.1"
+    },
+    {
+      "destinationTable": "TransactionKeyValue",
+      "key": "proxymod.config_1.PROJECT.runtime",
+      "value": "2"
+    },
+    {
+      "destinationTable": "TransactionKeyValue",
+      "key": "proxymod.config_1.PROJECT.failure",
+      "value": "0"
+    },
+    {
+      "destinationTable": "TransactionKeyValue",
+      "key": "proxymod.config_1.INPUTS.in_dir",
+      "value": "inputs/"
+    },
+    {
+      "destinationTable": "TransactionKeyValue",
+      "key": "proxymod.config_1.INPUTS.in_file_one",
+      "value": "in_file_one.csv"
+    },
+    {
+      "destinationTable": "TransactionKeyValue",
+      "key": "proxymod.config_1.INPUTS.in_file_two",
+      "value": "in_file_two.csv"
+    },
+    {
+      "destinationTable": "TransactionKeyValue",
+      "key": "proxymod.config_1.OUTPUTS.out_dir",
+      "value": "outputs/"
+    },
+    {
+      "destinationTable": "TransactionKeyValue",
+      "key": "proxymod.config_2.PROJECT.runtime",
+      "value": "2"
+    },
+    {
+      "destinationTable": "TransactionKeyValue",
+      "key": "proxymod.config_2.PROJECT.failure",
+      "value": "0"
+    },
+    {
+      "destinationTable": "TransactionKeyValue",
+      "key": "proxymod.config_2.OUTPUTS.out_dir",
+      "value": "outputs/"
+    },
+    {
+      "destinationTable": "TransactionKeyValue",
+      "key": "proxymod.config_3.PROJECT.runtime",
+      "value": "5"
+    },
+    {
+      "destinationTable": "TransactionKeyValue",
+      "key": "proxymod.config_3.PROJECT.failure",
+      "value": "0"
+    },
+    {
+      "destinationTable": "TransactionKeyValue",
+      "key": "proxymod.config_3.OUTPUTS.out_dir",
+      "value": "outputs/"
+    },
+    {
+      "_id": 1,
+      "ctime": "Thu Aug 30 15:19:40 PST 2018",
+      "destinationTable": "Files",
+      "hashsum": "319137b6d37fb22967ba03e604e655ccff41f3c1",
+      "hashtype": "sha1",
+      "mimetype": "text/csv",
+      "mtime": "Thu Aug 30 15:19:40 PST 2018",
+      "name": "in_file_one.csv",
+      "size": 180,
+      "subdir": "inputs/"
+    },
+    {
+      "_id": 2,
+      "ctime": "Thu Aug 30 15:19:40 PST 2018",
+      "destinationTable": "Files",
+      "hashsum": "319137b6d37fb22967ba03e604e655ccff41f3c1",
+      "hashtype": "sha1",
+      "mimetype": "text/csv",
+      "mtime": "Thu Aug 30 15:19:40 PST 2018",
+      "name": "in_file_two.csv",
+      "size": 180,
+      "subdir": "inputs/"
+    },
+    {
+      "_id": 3,
+      "ctime": "Thu Aug 30 15:19:40 PST 2018",
+      "destinationTable": "Files",
+      "hashsum": "283de48b246b9dd4e36cad2d3578d38cbf3a80a1",
+      "hashtype": "sha1",
+      "mimetype": "text/x-python",
+      "mtime": "Thu Aug 30 15:19:40 PST 2018",
+      "name": "loose_coupling.py",
+      "size": 1352,
+      "subdir": "models/"
+    },
+    {
+      "_id": 4,
+      "ctime": "Thu Aug 30 15:19:40 PST 2018",
+      "destinationTable": "Files",
+      "hashsum": "6348f1e2f76e6a176dd9efbd92dc08bed8ee2711",
+      "hashtype": "sha1",
+      "mimetype": "text/x-python",
+      "mtime": "Thu Aug 30 15:19:40 PST 2018",
+      "name": "tight_coupling_twoway.py",
+      "size": 2512,
+      "subdir": "models/"
+    },
+    {
+      "_id": 5,
+      "ctime": "Thu Aug 30 15:19:40 PST 2018",
+      "destinationTable": "Files",
+      "hashsum": "d956a5b4d608ad96919d6b1a8c311739f9097a0a",
+      "hashtype": "sha1",
+      "mimetype": "text/x-python",
+      "mtime": "Thu Aug 30 15:19:40 PST 2018",
+      "name": "tight_coupling.py",
+      "size": 1351,
+      "subdir": "models/"
+    }
+  ],
+  "eventID": "C234-1234-1234",
+  "eventTime": "2018-08-30T15:20:00Z",
+  "eventType": "org.pacifica.metadata.ingest",
+  "source": "/pacifica/metadata/ingest"
+}

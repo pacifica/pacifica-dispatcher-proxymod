@@ -1,0 +1,11 @@
+celery
+cherrypy
+cloudevents-python
+jsonpath2
+pacifica-cli
+pacifica-dispatcher
+pacifica-downloader
+pacifica-uploader
+peewee
+setuptools
+six
