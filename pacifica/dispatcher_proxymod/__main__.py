@@ -38,7 +38,7 @@ def stop_later(doit=False):
     """Used for unit testing stop after 10 seconds."""
     if not doit:  # pragma: no cover
         return
-    
+
     def sleep_then_exit():
         """sleep for 10 seconds then call cherrypy exit."""
         sleep(5)
@@ -57,7 +57,7 @@ def main() -> None:
                         help='The hostname or IP address on which to listen for connections.')
     parser.add_argument('--port', metavar='PORT', dest='port', type=int, default=8069,
                         help='The TCP port on which to listen for connections.')
-    parser.add_argument('--stop-after-a-moment', help=SUPPRESS,
+    parser.add_argument('--stop-after-a-moment', help=argparse.SUPPRESS,
                         default=False, dest='stop_later',
                         action='store_true')
     args = parser.parse_args()

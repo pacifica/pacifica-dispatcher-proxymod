@@ -63,12 +63,14 @@ class ProxTestCase(unittest.TestCase):
 
     @patch('pacifica.dispatcher_proxymod.event_handlers._to_proxymod_config_by_config_id')
     def test_bad_configs_exception(self, config_id_method):
+        """Test bad config files throw exceptions properly."""
         config_id_method.return_value = {'config_1': {}}
         with self.assertRaises(ConfigNotFoundProxEventHandlerError):
             _assert_valid_proxevent({}, self.event_data)
         config_id_method.return_value = {'config_1': {'foo': {}}, 'config_2': {}, 'config_3': {}}
         with self.assertRaises(InvalidConfigProxEventHandlerError):
             _assert_valid_proxevent({}, self.event_data)
+
 
 if __name__ == '__main__':
     unittest.main()

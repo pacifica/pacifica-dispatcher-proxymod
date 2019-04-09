@@ -1,9 +1,9 @@
 -r requirements.txt
 coverage
 git+https://github.com/IMMM-SFA/proxymod.git
+mock
 pep257
 pre-commit
 pylint
 pytest
-mock
 setuptools
