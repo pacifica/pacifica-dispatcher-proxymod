@@ -41,8 +41,8 @@ def stop_later(doit=False):
 
     def sleep_then_exit():
         """sleep for 10 seconds then call cherrypy exit."""
-        sleep(5)
-    cherrypy.engine.exit()
+        sleep(10)
+        cherrypy.engine.exit()
     sleep_thread = Thread(target=sleep_then_exit)
     sleep_thread.daemon = True
     sleep_thread.start()

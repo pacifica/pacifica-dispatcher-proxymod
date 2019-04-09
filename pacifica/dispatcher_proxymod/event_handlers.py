@@ -225,37 +225,34 @@ class ProxEventHandler(EventHandler):
                     with open(os.path.join(uploader_tempdir_name, '{0}.ini'.format(config_id)), 'w') as config_file:
                         config_file.write(_format_proxymod_config(config))
 
-                with tempfile.NamedTemporaryFile(suffix='.ini') as config_1_file:
-                    config_1_file.write(bytes(_format_proxymod_config(
-                        abspath_config_by_config_id['config_1']), 'utf-8'))
-                    config_1_file.seek(0)
+                config_1_file = tempfile.NamedTemporaryFile(suffix='.ini', delete=False)
+                config_1_file.write(bytes(_format_proxymod_config(
+                    abspath_config_by_config_id['config_1']), 'utf-8'))
+                config_1_file.close()
 
-                    with tempfile.NamedTemporaryFile(suffix='.ini') as config_2_file:
-                        config_2_file.write(bytes(_format_proxymod_config(
-                            abspath_config_by_config_id['config_2']), 'utf-8'))
-                        config_2_file.seek(0)
+                config_2_file = tempfile.NamedTemporaryFile(suffix='.ini', delete=False)
+                config_2_file.write(bytes(_format_proxymod_config(
+                    abspath_config_by_config_id['config_2']), 'utf-8'))
+                config_2_file.close()
 
-                        with tempfile.NamedTemporaryFile(suffix='.ini') as config_3_file:
-                            config_3_file.write(bytes(_format_proxymod_config(
-                                abspath_config_by_config_id['config_3']), 'utf-8'))
-                            config_3_file.seek(0)
+                config_3_file = tempfile.NamedTemporaryFile(suffix='.ini', delete=False)
+                config_3_file.write(bytes(_format_proxymod_config(
+                    abspath_config_by_config_id['config_3']), 'utf-8'))
+                config_3_file.close()
 
-                            # for model_file_inst, model_file_func in zip(model_file_insts, model_file_funcs):
-                            #     try:
-                            #         model_file_func(config_1_file.name, config_2_file.name, config_3_file.name)
-                            #     except Exception as reason:
-                            #         raise InvalidModelProxEventHandlerError(event, model_file_inst, reason)
+                with _redirect_stdout_stderr(uploader_tempdir_name):
+                    inst_func_zip = zip(model_file_insts, model_file_funcs)
+                    for model_file_inst, model_file_func in inst_func_zip:
+                        try:
+                            model_file_func(config_1_file.name,
+                                            config_2_file.name, config_3_file.name)
+                        except Exception as reason:
+                            raise InvalidModelProxEventHandlerError(
+                                event, model_file_inst, reason)
 
-                            with _redirect_stdout_stderr(uploader_tempdir_name):
-                                inst_func_zip = zip(model_file_insts, model_file_funcs)
-                                for model_file_inst, model_file_func in inst_func_zip:
-                                    try:
-                                        model_file_func(config_1_file.name,
-                                                        config_2_file.name, config_3_file.name)
-                                    except Exception as reason:
-                                        raise InvalidModelProxEventHandlerError(
-                                            event, model_file_inst, reason)
-
+                os.unlink(config_1_file.name)
+                os.unlink(config_2_file.name)
+                os.unlink(config_3_file.name)
                 with _redirect_stdout_stderr(uploader_tempdir_name, 'upload-'):
                     # pylint: disable=protected-access
                     (_bundle, _job_id, _state) = self.uploader_runner.upload(
