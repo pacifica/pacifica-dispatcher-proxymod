@@ -7,5 +7,5 @@
 # All rights reserved.
 #
 # See LICENSE and WARRANTY for details.
-
+"""Pacifica Namespace Module."""
 __import__('pkg_resources').declare_namespace(__name__)

@@ -7,6 +7,7 @@
 # All rights reserved.
 #
 # See LICENSE and WARRANTY for details.
+"""Setuptools module calling setup method."""
 from os import path
 try:  # pip version 9
     from pip.req import parse_requirements
@@ -21,7 +22,7 @@ setup(
     use_scm_version=True,
     setup_requires=['setuptools_scm'],
     description='Pacifica Dispatcher for proxymod',
-    url='https://pypi.python.org/pypi/pacifica-dispatcher-proxymod/',
+    url='https://github.com/pacifica/pacifica-dispatcher-proxymod/',
     long_description=open(path.join(
         path.abspath(path.dirname(__file__)),
         'README.md')).read(),

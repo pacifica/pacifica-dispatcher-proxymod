@@ -7,7 +7,7 @@
 # All rights reserved.
 #
 # See LICENSE and WARRANTY for details.
-
+"""Module to test proxymod dispatcher."""
 import json
 import os
 import unittest
@@ -23,38 +23,33 @@ from pacifica.dispatcher_proxymod.router import router
 
 
 class ProxTestCase(unittest.TestCase):
-    def setUp(self):
-        self.basedir_name = os.path.abspath(os.path.join('test_files', 'C234-1234-1234'))
+    """Proxymod unittest class."""
 
+    def setUp(self):
+        """Build temporary directories to start testing."""
+        self.basedir_name = os.path.abspath(os.path.join('test_files', 'C234-1234-1234'))
         with open(os.path.join(self.basedir_name, 'event.json'), mode='r') as event_file:
             self.event_data = json.load(event_file)
 
-        return
-
     def test_event_handler(self):
+        """Test the event handler."""
         event = Event(self.event_data)
-
         downloader_runner = LocalDownloaderRunner(os.path.join(self.basedir_name, 'data'))
-
         uploader_runner = LocalUploaderRunner()
-
         event_handler = ProxEventHandler(downloader_runner, uploader_runner)
-
         self.assertEqual(None, event_handler.handle(event))
 
-        return
-
     def test_proxymod_path(self):
-        proxymod_path = Path.parse_file(os.path.join(os.path.dirname(__file__), '..',  'pacifica', 'dispatcher_proxymod', 'jsonpath2', 'proxymod.txt'))
-
+        """Test proxymod path."""
+        proxymod_path = Path.parse_file(os.path.join(
+            os.path.dirname(__file__), '..', 'pacifica',
+            'dispatcher_proxymod', 'jsonpath2', 'proxymod.txt'
+        ))
         self.assertEqual(1, len(list(proxymod_path.match(self.event_data))))
 
-        return
-
     def test_router(self):
+        """Test the router."""
         self.assertEqual(1, len(list(router.match(self.event_data))))
-
-        return
 
 
 if __name__ == '__main__':

@@ -7,7 +7,7 @@
 # All rights reserved.
 #
 # See LICENSE and WARRANTY for details.
-
+"""Proxymod Event Handler Module."""
 import contextlib
 import copy
 import importlib
@@ -40,7 +40,7 @@ RE_GROUP_PROXYMOD_TRANSACTION_KEY_VALUE_QUAD_HEADER_NAME_ = 2
 RE_GROUP_PROXYMOD_TRANSACTION_KEY_VALUE_QUAD_SUBHEADER_NAME_ = 3
 
 
-def _format_proxymod_config(config: typing.Dict[str, typing.Dict[str, typing.Any]] = {}) -> str:
+def _format_proxymod_config(config: typing.Dict[str, typing.Dict[str, typing.Any]]) -> str:
     lines = []
 
     for header_name, header_values in config.items():
@@ -54,41 +54,28 @@ def _format_proxymod_config(config: typing.Dict[str, typing.Dict[str, typing.Any
     return os.linesep.join(lines)
 
 
-def _is_valid_proxymod_config(config: typing.Dict[str, typing.Dict[str, typing.Any]] = {}) -> bool:
+def _is_valid_proxymod_config(config: typing.Dict[str, typing.Dict[str, typing.Any]]) -> bool:
+    valid_config_meta = {
+        'PROJECT': ['runtime', 'failure'],
+        'INPUTS': ['in_dir', 'in_file_one', 'in_file_two'],
+        'OUTPUTS': ['out_dir']
+    }
     for header_name, header_values in config.items():
         subheader_names = header_values.keys()
-
-        if 'PROJECT' == header_name:
-            for subheader_name in ['runtime', 'failure']:
-                if subheader_name not in subheader_names:
-                    return False
-
-            for subheader_name in subheader_names:
-                if subheader_name not in ['runtime', 'failure']:
-                    return False
-        elif 'INPUTS' == header_name:
-            for subheader_name in ['in_dir', 'in_file_one', 'in_file_two']:
-                if subheader_name not in subheader_names:
-                    return False
-
-            for subheader_name in subheader_names:
-                if subheader_name not in ['in_dir', 'in_file_one', 'in_file_two']:
-                    return False
-        elif 'OUTPUTS' == header_name:
-            for subheader_name in ['out_dir']:
-                if subheader_name not in subheader_names:
-                    return False
-
-            for subheader_name in subheader_names:
-                if subheader_name not in ['out_dir']:
-                    return False
-        else:
+        if header_name not in valid_config_meta.keys():
             return False
-
+        for subheader_name in valid_config_meta.get(header_name):
+            if subheader_name not in subheader_names:
+                return False
+        for subheader_name in subheader_names:
+            if subheader_name not in valid_config_meta.get(header_name):
+                return False
     return True
 
 
-def _to_proxymod_config_by_config_id(transaction_key_values: typing.List[TransactionKeyValue] = []) -> typing.Dict[str, typing.Dict[str, typing.Dict[str, typing.Any]]]:
+def _to_proxymod_config_by_config_id(
+        transaction_key_values: typing.List[TransactionKeyValue]
+        ) -> typing.Dict[str, typing.Dict[str, typing.Dict[str, typing.Any]]]:
     config_by_config_id = {}
 
     for transaction_key_value in transaction_key_values:
@@ -111,57 +98,84 @@ def _to_proxymod_config_by_config_id(transaction_key_values: typing.List[Transac
     return config_by_config_id
 
 
-class ProxEventHandler(EventHandler):
-    def __init__(self, downloader_runner: DownloaderRunner, uploader_runner: UploaderRunner) -> None:
-        super(ProxEventHandler, self).__init__()
+@contextlib.contextmanager
+def _redirect_stdout_stderr(tempdir_name, prefix='', mode='w'):
+    with open(os.path.join(tempdir_name, '{}stdout.log'.format(prefix)), mode) as stdout_file:
+        with open(os.path.join(tempdir_name, '{}stderr.log'.format(prefix)), mode) as stderr_file:
+            with contextlib.redirect_stdout(stdout_file):
+                with contextlib.redirect_stderr(stderr_file):
+                    yield (stdout_file, stderr_file)
 
+
+def _assert_valid_proxevent(transaction_key_value_insts, event):
+    config_by_config_id = _to_proxymod_config_by_config_id(transaction_key_values=transaction_key_value_insts)
+
+    for config_id in ['config_1', 'config_2', 'config_3']:
+        if config_id not in config_by_config_id:
+            raise ConfigNotFoundProxEventHandlerError(event, config_id)
+
+        config = config_by_config_id[config_id]
+
+        if not _is_valid_proxymod_config(config):
+            raise InvalidConfigProxEventHandlerError(event, config_id, config)
+    return config_by_config_id
+
+
+def _assert_valid_proxinputs(config_by_config_id, file_insts):
+    input_file_insts = []
+    _in_dir = config_by_config_id.get('config_1', {}).get('INPUTS', {}).get('in_dir', None)
+    _in_file_one = config_by_config_id.get('config_1', {}).get('INPUTS', {}).get('in_file_one', None)
+    _in_file_two = config_by_config_id.get('config_1', {}).get('INPUTS', {}).get('in_file_two', None)
+    for file_inst in file_insts:
+        # pylint: disable=too-many-boolean-expressions
+        if (file_inst.mimetype == 'text/csv') and (file_inst.subdir is not None) and \
+           (_in_dir == file_inst.subdir) and (file_inst.name is not None) and \
+           ((_in_file_one == file_inst.name) or (_in_file_two == file_inst.name)):
+            input_file_insts.append(file_inst)
+        # pylint: enable=too-many-boolean-expressions
+    return input_file_insts
+
+
+def _assert_valid_proxmodels(file_insts):
+    model_file_insts = []
+    for file_inst in file_insts:
+        if (file_inst.mimetype == 'text/x-python') and (file_inst.subdir == 'models/'):
+            model_file_insts.append(file_inst)
+    return model_file_insts
+
+
+# pylint: disable=too-few-public-methods
+class ProxEventHandler(EventHandler):
+    """
+    Proxymod Event Handler Class.
+
+    Handle a proxymod event and run proxymod.
+    """
+
+    def __init__(self, downloader_runner: DownloaderRunner, uploader_runner: UploaderRunner) -> None:
+        """Save the download and upload runner classes for later use."""
+        super(ProxEventHandler, self).__init__()
         self.downloader_runner = downloader_runner
         self.uploader_runner = uploader_runner
 
+    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-statements
     def handle(self, event: Event) -> None:
+        """Handle the proxymod event."""
         transaction_inst = Transaction.from_cloudevents_model(event)
         transaction_key_value_insts = TransactionKeyValue.from_cloudevents_model(event)
         file_insts = File.from_cloudevents_model(event)
-
-        config_by_config_id = _to_proxymod_config_by_config_id(transaction_key_values=transaction_key_value_insts)
-
-        for config_id in ['config_1', 'config_2', 'config_3']:
-            if config_id not in config_by_config_id:
-                raise ConfigNotFoundProxEventHandlerError(event, config_id)
-
-            config = config_by_config_id[config_id]
-
-            if not _is_valid_proxymod_config(config):
-                raise InvalidConfigProxEventHandlerError(event, config_id, config)
-
-        input_file_insts = []
-        model_file_insts = []
-
-        _in_dir = config_by_config_id.get('config_1', {}).get('INPUTS', {}).get('in_dir', None)
-        _in_file_one = config_by_config_id.get('config_1', {}).get('INPUTS', {}).get('in_file_one', None)
-        _in_file_two = config_by_config_id.get('config_1', {}).get('INPUTS', {}).get('in_file_two', None)
-
-        for file_inst in file_insts:
-            if ('text/csv' == file_inst.mimetype) and (file_inst.subdir is not None) and \
-               (_in_dir == file_inst.subdir) and (file_inst.name is not None) and \
-               ((_in_file_one == file_inst.name) or (_in_file_two == file_inst.name)):
-                input_file_insts.append(file_inst)
-            elif ('text/x-python' == file_inst.mimetype) and ('models/' == file_inst.subdir):
-                model_file_insts.append(file_inst)
-            else:
-                # NOTE Ignore other files.
-                pass
+        config_by_config_id = _assert_valid_proxevent(transaction_key_value_insts, event)
+        input_file_insts = _assert_valid_proxinputs(config_by_config_id, file_insts)
+        model_file_insts = _assert_valid_proxmodels(file_insts)
 
         with tempfile.TemporaryDirectory() as downloader_tempdir_name:
             with tempfile.TemporaryDirectory() as uploader_tempdir_name:
                 # model_file_openers = self.downloader_runner.download(downloader_tempdir_name, model_file_insts)
-
-                with open(os.path.join(uploader_tempdir_name, 'download-stdout.log'), mode='w') as downloader_stdout_file:
-                    with open(os.path.join(uploader_tempdir_name, 'download-stderr.log'), mode='w') as downloader_stderr_file:
-                        with contextlib.redirect_stdout(downloader_stdout_file):
-                            with contextlib.redirect_stderr(downloader_stderr_file):
-                                model_file_openers = self.downloader_runner.download(
-                                    downloader_tempdir_name, model_file_insts)
+                with _redirect_stdout_stderr(uploader_tempdir_name, 'download-'):
+                    model_file_openers = self.downloader_runner.download(
+                        downloader_tempdir_name, model_file_insts)
 
                 model_file_funcs = []
 
@@ -187,19 +201,16 @@ class ProxEventHandler(EventHandler):
 
                 # input_file_openers = self.downloader_runner.download(downloader_tempdir_name, input_file_insts)
 
-                with open(os.path.join(uploader_tempdir_name, 'download-stdout.log'), mode='a') as downloader_stdout_file:
-                    with open(os.path.join(uploader_tempdir_name, 'download-stderr.log'), mode='a') as downloader_stderr_file:
-                        with contextlib.redirect_stdout(downloader_stdout_file):
-                            with contextlib.redirect_stderr(downloader_stderr_file):
-                                input_file_openers = self.downloader_runner.download(
-                                    downloader_tempdir_name, input_file_insts)
+                with _redirect_stdout_stderr(uploader_tempdir_name, 'download-', 'a'):
+                    input_file_openers = self.downloader_runner.download(
+                        downloader_tempdir_name, input_file_insts)
 
                 abspath_config_by_config_id = copy.deepcopy(config_by_config_id)
 
                 for config_id, config in abspath_config_by_config_id.items():
                     if 'INPUTS' in config:
                         if 'in_dir' in config['INPUTS']:
-                            for input_file_inst, opener in zip(input_file_insts, input_file_openers):
+                            for opener in input_file_openers:
                                 with opener() as file:
                                     config['INPUTS']['in_dir'] = os.path.abspath(os.path.dirname(file.name))
 
@@ -211,7 +222,7 @@ class ProxEventHandler(EventHandler):
                                 os.path.join(uploader_tempdir_name, config['OUTPUTS']['out_dir']))
 
                 for config_id, config in config_by_config_id.items():
-                    with open(os.path.join(uploader_tempdir_name, '{0}.ini'.format(config_id)), mode='w') as config_file:
+                    with open(os.path.join(uploader_tempdir_name, '{0}.ini'.format(config_id)), 'w') as config_file:
                         config_file.write(_format_proxymod_config(config))
 
                 with tempfile.NamedTemporaryFile(suffix='.ini') as config_1_file:
@@ -235,38 +246,32 @@ class ProxEventHandler(EventHandler):
                             #     except Exception as reason:
                             #         raise InvalidModelProxEventHandlerError(event, model_file_inst, reason)
 
-                            with open(os.path.join(uploader_tempdir_name, 'stdout.log'), mode='w') as stdout_file:
-                                with open(os.path.join(uploader_tempdir_name, 'stderr.log'), mode='w') as stderr_file:
-                                    with contextlib.redirect_stdout(stdout_file):
-                                        with contextlib.redirect_stderr(stderr_file):
-                                            inst_func_zip = zip(model_file_insts, model_file_funcs)
-                                            for model_file_inst, model_file_func in inst_func_zip:
-                                                try:
-                                                    model_file_func(config_1_file.name,
-                                                                    config_2_file.name, config_3_file.name)
-                                                except Exception as reason:
-                                                    raise InvalidModelProxEventHandlerError(
-                                                        event, model_file_inst, reason)
+                            with _redirect_stdout_stderr(uploader_tempdir_name):
+                                inst_func_zip = zip(model_file_insts, model_file_funcs)
+                                for model_file_inst, model_file_func in inst_func_zip:
+                                    try:
+                                        model_file_func(config_1_file.name,
+                                                        config_2_file.name, config_3_file.name)
+                                    except Exception as reason:
+                                        raise InvalidModelProxEventHandlerError(
+                                            event, model_file_inst, reason)
 
-                with open(os.path.join(uploader_tempdir_name, 'upload-stdout.log'), mode='w') as uploader_stdout_file:
-                    with open(os.path.join(uploader_tempdir_name, 'upload-stderr.log'), mode='w') as uploader_stderr_file:
-                        with contextlib.redirect_stdout(uploader_stdout_file):
-                            with contextlib.redirect_stderr(uploader_stderr_file):
-                                (bundle, job_id, state) = self.uploader_runner.upload(
-                                    uploader_tempdir_name, transaction=Transaction(
-                                        submitter=transaction_inst.submitter,
-                                        instrument=transaction_inst.instrument,
-                                        project=transaction_inst.project
-                                    ), transaction_key_values=[
-                                        TransactionKeyValue(key='Transactions._id', value=transaction_inst._id)
-                                    ]
-                                )
-
-                pass
-
-            pass
-
-        pass
+                with _redirect_stdout_stderr(uploader_tempdir_name, 'upload-'):
+                    # pylint: disable=protected-access
+                    (_bundle, _job_id, _state) = self.uploader_runner.upload(
+                        uploader_tempdir_name, transaction=Transaction(
+                            submitter=transaction_inst.submitter,
+                            instrument=transaction_inst.instrument,
+                            project=transaction_inst.project
+                        ), transaction_key_values=[
+                            TransactionKeyValue(key='Transactions._id', value=transaction_inst._id)
+                        ]
+                    )
+                    # pylint: enable=protected-access
+    # pylint: enable=too-many-locals
+    # pylint: enable=too-many-branches
+    # pylint: enable=too-many-statements
+# pylint: enable=too-few-public-methods
 
 
 __all__ = ('ProxEventHandler', )

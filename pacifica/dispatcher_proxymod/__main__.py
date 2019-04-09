@@ -7,7 +7,7 @@
 # All rights reserved.
 #
 # See LICENSE and WARRANTY for details.
-
+"""Main method for starting proxymod handler."""
 import argparse
 import os
 
@@ -18,6 +18,7 @@ from pacifica.dispatcher.receiver import create_peewee_model
 
 from .router import router
 
+# pylint: disable=invalid-name
 ReceiveTaskModel = create_peewee_model(playhouse.db_url.connect(os.getenv('DATABASE_URL', 'sqlite:///:memory:')))
 
 ReceiveTaskModel.create_table(safe=True)
@@ -28,9 +29,11 @@ celery_app = ReceiveTaskModel.create_celery_app(
 )
 
 application = ReceiveTaskModel.create_cherrypy_app(celery_app.tasks['pacifica.dispatcher_proxymod.tasks.receive'])
+# pylint: enable=invalid-name
 
 
 def main() -> None:
+    """Main method for starting proxymod handler server."""
     parser = argparse.ArgumentParser(description='Start the CherryPy application and listen for connections.')
     parser.add_argument('--config', metavar='CONFIG', dest='config', type=str, default=None,
                         help='The CherryPy configuration file (overrides host and port options).')
@@ -55,8 +58,6 @@ def main() -> None:
 
     cherrypy.engine.start()
     cherrypy.engine.block()
-
-    return
 
 
 __all__ = ('ReceiveTaskModel', 'application', 'celery_app', 'main', )

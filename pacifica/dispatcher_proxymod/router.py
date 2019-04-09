@@ -7,7 +7,7 @@
 # All rights reserved.
 #
 # See LICENSE and WARRANTY for details.
-
+"""Router proxymod module."""
 import os
 
 from jsonpath2.path import Path
@@ -21,6 +21,8 @@ from pacifica.uploader import Uploader
 
 from .event_handlers import ProxEventHandler
 
+# these are not exported as constants so no one sees them anyway
+# pylint: disable=invalid-name
 config = generate_global_config()
 
 auth = generate_requests_auth(config)
