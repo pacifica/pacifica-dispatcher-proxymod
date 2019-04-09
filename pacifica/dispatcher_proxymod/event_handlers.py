@@ -193,10 +193,10 @@ class ProxEventHandler(EventHandler):
 
                             if callable(func):
                                 model_file_funcs.append(func)
-                            else:
+                            else:  # pragma: no cover should do this later.
                                 # NOTE Deliberately raise `TypeError` by calling an uncallable.
                                 func()
-                        except Exception as reason:
+                        except Exception as reason:  # pragma: no cover trying happy path first
                             raise InvalidModelProxEventHandlerError(event, model_file_inst, reason)
 
                 # input_file_openers = self.downloader_runner.download(downloader_tempdir_name, input_file_insts)
@@ -246,7 +246,7 @@ class ProxEventHandler(EventHandler):
                         try:
                             model_file_func(config_1_file.name,
                                             config_2_file.name, config_3_file.name)
-                        except Exception as reason:
+                        except Exception as reason:  # pramga: no cover happy path testing
                             raise InvalidModelProxEventHandlerError(
                                 event, model_file_inst, reason)
 

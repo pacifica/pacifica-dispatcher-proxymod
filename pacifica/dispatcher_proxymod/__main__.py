@@ -69,7 +69,7 @@ def main() -> None:
         },
     })
 
-    if args.config is not None:
+    if args.config is not None:  # pragma: no cover standard config update
         cherrypy.config.update(args.config)
 
     cherrypy.tree.mount(application)

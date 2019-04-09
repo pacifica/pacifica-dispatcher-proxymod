@@ -58,18 +58,20 @@ class ProxTestCase(unittest.TestCase):
     def test_bad_configs(self):
         """Test some bad configuration files see if we catch them."""
         self.assertFalse(_is_valid_proxymod_config({'foo': {'bar': ''}}))
-        self.assertFalse(_is_valid_proxymod_config({'PROJECTS': {'bar': ''}}))
-        self.assertFalse(_is_valid_proxymod_config({'PROJECTS': {'runtime': ''}}))
+        self.assertFalse(_is_valid_proxymod_config({'PROJECT': {'bar': ''}}))
+        self.assertFalse(_is_valid_proxymod_config({'PROJECT': {'runtime': ''}}))
 
     @patch('pacifica.dispatcher_proxymod.event_handlers._to_proxymod_config_by_config_id')
     def test_bad_configs_exception(self, config_id_method):
         """Test bad config files throw exceptions properly."""
         config_id_method.return_value = {'config_1': {}}
-        with self.assertRaises(ConfigNotFoundProxEventHandlerError):
+        with self.assertRaises(ConfigNotFoundProxEventHandlerError) as cm:
             _assert_valid_proxevent({}, self.event_data)
+            self.assertTrue('config_2' in str(cm.exception))
         config_id_method.return_value = {'config_1': {'foo': {}}, 'config_2': {}, 'config_3': {}}
-        with self.assertRaises(InvalidConfigProxEventHandlerError):
+        with self.assertRaises(InvalidConfigProxEventHandlerError) as cm:
             _assert_valid_proxevent({}, self.event_data)
+            self.assertTrue('runtime' in str(cm.exception))
 
 
 if __name__ == '__main__':
