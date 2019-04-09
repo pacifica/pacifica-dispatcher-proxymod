@@ -246,7 +246,7 @@ class ProxEventHandler(EventHandler):
                         try:
                             model_file_func(config_1_file.name,
                                             config_2_file.name, config_3_file.name)
-                        except Exception as reason:  # pramga: no cover happy path testing
+                        except Exception as reason:  # pragma: no cover happy path testing
                             raise InvalidModelProxEventHandlerError(
                                 event, model_file_inst, reason)
 

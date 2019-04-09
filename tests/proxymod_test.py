@@ -16,6 +16,7 @@ from mock import patch
 from cloudevents.model import Event
 from jsonpath2.path import Path
 
+from pacifica.dispatcher.models import File
 from pacifica.dispatcher.downloader_runners import LocalDownloaderRunner
 from pacifica.dispatcher.uploader_runners import LocalUploaderRunner
 
@@ -24,6 +25,7 @@ from pacifica.dispatcher_proxymod.event_handlers import _assert_valid_proxevent
 from pacifica.dispatcher_proxymod.router import router
 from pacifica.dispatcher_proxymod.exceptions import ConfigNotFoundProxEventHandlerError
 from pacifica.dispatcher_proxymod.exceptions import InvalidConfigProxEventHandlerError
+from pacifica.dispatcher_proxymod.exceptions import InvalidModelProxEventHandlerError
 
 
 class ProxTestCase(unittest.TestCase):
@@ -60,6 +62,24 @@ class ProxTestCase(unittest.TestCase):
         self.assertFalse(_is_valid_proxymod_config({'foo': {'bar': ''}}))
         self.assertFalse(_is_valid_proxymod_config({'PROJECT': {'bar': ''}}))
         self.assertFalse(_is_valid_proxymod_config({'PROJECT': {'runtime': ''}}))
+        self.assertFalse(_is_valid_proxymod_config({'PROJECT': {'runtime': '', 'failure': '', 'something_bad': ''}}))
+
+    def test_exceptions(self):
+        """Test the exceptions classes."""
+        exception = InvalidModelProxEventHandlerError(
+            Event(self.event_data),
+            File(name='some_file_name.txt', path='some_file_path.txt'),
+            AssertionError('fake error')
+        )
+        self.assertEqual('proxymod model for file \'some_file_name.txt\' is invalid: fake error', str(exception))
+        exception = ConfigNotFoundProxEventHandlerError(
+            Event(self.event_data), 'config_1'
+        )
+        self.assertEqual('proxymod configuration \'config_1\' not found', str(exception))
+        exception = InvalidConfigProxEventHandlerError(
+            Event(self.event_data), 'config_1', {}
+        )
+        self.assertEqual('proxymod configuration \'config_1\' is invalid', str(exception))
 
     @patch('pacifica.dispatcher_proxymod.event_handlers._to_proxymod_config_by_config_id')
     def test_bad_configs_exception(self, config_id_method):
@@ -67,11 +87,15 @@ class ProxTestCase(unittest.TestCase):
         config_id_method.return_value = {'config_1': {}}
         with self.assertRaises(ConfigNotFoundProxEventHandlerError) as cnx_mgr:
             _assert_valid_proxevent({}, self.event_data)
+            self.assertTrue('proxymod configuration' in str(cnx_mgr.exception))
             self.assertTrue('config_2' in str(cnx_mgr.exception))
+            self.assertTrue('not found' in str(cnx_mgr.exception))
         config_id_method.return_value = {'config_1': {'foo': {}}, 'config_2': {}, 'config_3': {}}
         with self.assertRaises(InvalidConfigProxEventHandlerError) as cnx_mgr:
             _assert_valid_proxevent({}, self.event_data)
+            self.assertTrue('proxymod configuration' in str(cnx_mgr.exception))
             self.assertTrue('runtime' in str(cnx_mgr.exception))
+            self.assertTrue('is invalid' in str(cnx_mgr.exception))
 
 
 if __name__ == '__main__':
