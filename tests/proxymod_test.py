@@ -65,13 +65,13 @@ class ProxTestCase(unittest.TestCase):
     def test_bad_configs_exception(self, config_id_method):
         """Test bad config files throw exceptions properly."""
         config_id_method.return_value = {'config_1': {}}
-        with self.assertRaises(ConfigNotFoundProxEventHandlerError) as cm:
+        with self.assertRaises(ConfigNotFoundProxEventHandlerError) as cnx_mgr:
             _assert_valid_proxevent({}, self.event_data)
-            self.assertTrue('config_2' in str(cm.exception))
+            self.assertTrue('config_2' in str(cnx_mgr.exception))
         config_id_method.return_value = {'config_1': {'foo': {}}, 'config_2': {}, 'config_3': {}}
-        with self.assertRaises(InvalidConfigProxEventHandlerError) as cm:
+        with self.assertRaises(InvalidConfigProxEventHandlerError) as cnx_mgr:
             _assert_valid_proxevent({}, self.event_data)
-            self.assertTrue('runtime' in str(cm.exception))
+            self.assertTrue('runtime' in str(cnx_mgr.exception))
 
 
 if __name__ == '__main__':
