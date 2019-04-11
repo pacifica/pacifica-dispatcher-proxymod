@@ -110,7 +110,18 @@ def _redirect_stdout_stderr(tempdir_name, prefix='', mode='w'):
 def _assert_valid_proxevent(transaction_key_value_insts, event):
     config_by_config_id = _to_proxymod_config_by_config_id(transaction_key_values=transaction_key_value_insts)
 
-    for config_id in ['config_1', 'config_2', 'config_3']:
+    configs_count = 0
+
+    for transaction_key_value in transaction_key_value_insts:
+        if transaction_key_value.key == 'proxymod.configs_count':
+            configs_count = int(transaction_key_value.value)
+
+    if configs_count <= 0:
+        raise ConfigNotFoundProxEventHandlerError(event, 'config_1')
+
+    for config_index in range(0, configs_count):
+        config_id = 'config_{0}'.format(config_index + 1)
+
         if config_id not in config_by_config_id:
             raise ConfigNotFoundProxEventHandlerError(event, config_id)
 
@@ -225,34 +236,27 @@ class ProxEventHandler(EventHandler):
                     with open(os.path.join(uploader_tempdir_name, '{0}.ini'.format(config_id)), 'w') as config_file:
                         config_file.write(_format_proxymod_config(config))
 
-                config_1_file = tempfile.NamedTemporaryFile(suffix='.ini', delete=False)
-                config_1_file.write(bytes(_format_proxymod_config(
-                    abspath_config_by_config_id['config_1']), 'utf-8'))
-                config_1_file.close()
+                config_files = []
 
-                config_2_file = tempfile.NamedTemporaryFile(suffix='.ini', delete=False)
-                config_2_file.write(bytes(_format_proxymod_config(
-                    abspath_config_by_config_id['config_2']), 'utf-8'))
-                config_2_file.close()
+                for config_id, abspath_config in abspath_config_by_config_id.items():
+                    config_file = tempfile.NamedTemporaryFile(suffix='.ini', delete=False)
+                    config_file.write(bytes(_format_proxymod_config(abspath_config), 'utf-8'))
+                    config_file.close()
 
-                config_3_file = tempfile.NamedTemporaryFile(suffix='.ini', delete=False)
-                config_3_file.write(bytes(_format_proxymod_config(
-                    abspath_config_by_config_id['config_3']), 'utf-8'))
-                config_3_file.close()
+                    config_files.append(config_file)
 
                 with _redirect_stdout_stderr(uploader_tempdir_name):
                     inst_func_zip = zip(model_file_insts, model_file_funcs)
                     for model_file_inst, model_file_func in inst_func_zip:
                         try:
-                            model_file_func(config_1_file.name,
-                                            config_2_file.name, config_3_file.name)
+                            model_file_func(*list(map(lambda config_file: config_file.name, config_files)))
                         except Exception as reason:  # pragma: no cover happy path testing
                             raise InvalidModelProxEventHandlerError(
                                 event, model_file_inst, reason)
 
-                os.unlink(config_1_file.name)
-                os.unlink(config_2_file.name)
-                os.unlink(config_3_file.name)
+                for config_file in config_files:
+                    os.unlink(config_file.name)
+
                 with _redirect_stdout_stderr(uploader_tempdir_name, 'upload-'):
                     # pylint: disable=protected-access
                     (_bundle, _job_id, _state) = self.uploader_runner.upload(

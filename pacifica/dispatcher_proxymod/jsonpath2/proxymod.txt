@@ -18,6 +18,14 @@ $[?(
   $["data"][*][?(
     @["destinationTable"] = "TransactionKeyValue"
       and
+    @["key"] = "proxymod.configs_count"
+      and
+    @["value"]
+  )]
+    and
+  $["data"][*][?(
+    @["destinationTable"] = "TransactionKeyValue"
+      and
     @["key"] = "proxymod.config_1.PROJECT.runtime"
       and
     @["value"]
@@ -59,54 +67,6 @@ $[?(
     @["destinationTable"] = "TransactionKeyValue"
       and
     @["key"] = "proxymod.config_1.OUTPUTS.out_dir"
-      and
-    @["value"]
-  )]
-    and
-  $["data"][*][?(
-    @["destinationTable"] = "TransactionKeyValue"
-      and
-    @["key"] = "proxymod.config_2.PROJECT.runtime"
-      and
-    @["value"]
-  )]
-    and
-  $["data"][*][?(
-    @["destinationTable"] = "TransactionKeyValue"
-      and
-    @["key"] = "proxymod.config_2.PROJECT.failure"
-      and
-    @["value"]
-  )]
-    and
-  $["data"][*][?(
-    @["destinationTable"] = "TransactionKeyValue"
-      and
-    @["key"] = "proxymod.config_2.OUTPUTS.out_dir"
-      and
-    @["value"]
-  )]
-    and
-  $["data"][*][?(
-    @["destinationTable"] = "TransactionKeyValue"
-      and
-    @["key"] = "proxymod.config_3.PROJECT.runtime"
-      and
-    @["value"]
-  )]
-    and
-  $["data"][*][?(
-    @["destinationTable"] = "TransactionKeyValue"
-      and
-    @["key"] = "proxymod.config_3.PROJECT.failure"
-      and
-    @["value"]
-  )]
-    and
-  $["data"][*][?(
-    @["destinationTable"] = "TransactionKeyValue"
-      and
-    @["key"] = "proxymod.config_3.OUTPUTS.out_dir"
       and
     @["value"]
   )]
