@@ -110,8 +110,40 @@ env DATABASE_URL="sqliteext:///db.sqlite3" env/bin/python3 -m "pacifica.dispatch
 
 ## Subscription Guide
 
-TODO
+Subscriptions to the Pacifica notifications service require a notifications URL and may contain some authentication.
+Discuss with the Systems Administrator of your Pacifica installation about authenticating to the notifications service.
+
+The service description is located
+[here](https://github.com/pacifica/pacifica-notifications/blob/master/docs/exampleusage.md#subscriptions)
+and we will dig further into specifics for this dispatcher.
+
+```bash
+JSONPATH=$(cat pacifica/dispatcher_proxymod/jsonpath2/proxymod.txt)
+curl -X POST -H 'Content-Type: application/json' -u user:password http://notify.example.com/eventmatch -d'{
+    "name": "ProxyMod Event Match",
+    "jsonpath": "'${JSONPATH}'",
+    "target_url": "http://mylaptop.example.com:8069/receive"
+}'
+```
 
 ## Upload Guide
 
-TODO
+To start the process an initial upload needs to be executed. The data and uploader configuration is located in
+the `tests` directory.
+
+ 1. Install the Pacifica CLI.
+```bash
+env/bin/pip3 install pacifica-cli
+```
+ 2. Change working directory to `tests`.
+```bash
+cd tests/test_files/C234-1234-1234/data
+```
+ 3. Configure the CLI (you will need input from your Systems Administrator for the values here).
+```bash
+pacifica-cli configure
+```
+ 4. Perform the upload and add the additional project information.
+```bash
+pacifica-cli upload --project XXXX
+```
