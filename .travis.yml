@@ -1,6 +1,7 @@
 language: python
+dist: xenial
 python:
-- 3.6
+- 3.7
 services:
 - redis-server
 stages:
@@ -13,7 +14,7 @@ env:
 jobs:
   include:
   - stage: lint
-    python: 3.6
+    python: 3.7
     script: pre-commit run -a
   - stage: test
     script:

@@ -5,7 +5,7 @@ pull_requests:
 environment:
   BROKER_URL: redis://localhost:6379/0
   matrix:
-    - PYTHON: C:\Python36-x64
+    - PYTHON: C:\Python37-x64
 
 install:
   - ps: >

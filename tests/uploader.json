@@ -1,0 +1,161 @@
+[
+  {
+    "destinationTable": "Transactions.submitter",
+    "displayFormat": "{_id} - {first_name} {last_name}",
+    "displayTitle": "Currently Logged On",
+    "displayType": "logged_on",
+    "metaID": "logon",
+    "queryDependency": {},
+    "queryFields": [
+      "first_name",
+      "last_name",
+      "_id"
+    ],
+    "sourceTable": "users",
+    "value": "",
+    "valueField": "_id"
+  },
+  {
+    "destinationTable": "Transactions.project",
+    "displayFormat": "{_id} - {title}",
+    "displayTitle": "Project ID",
+    "displayType": "select",
+    "metaID": "project",
+    "queryDependency": {
+      "instrument_id": "instrument"
+    },
+    "queryFields": [
+      "_id",
+      "title"
+    ],
+    "sourceTable": "projects",
+    "value": "",
+    "valueField": "_id"
+  },
+  {
+    "destinationTable": "Transactions.instrument",
+    "displayFormat": "{_id} {name_short} - {display_name}",
+    "displayTitle": "Instrument ID",
+    "displayType": "select",
+    "metaID": "instrument",
+    "queryDependency": {},
+    "queryFields": [
+      "_id",
+      "name_short",
+      "display_name"
+    ],
+    "sourceTable": "instruments",
+    "value": "",
+    "valueField": "_id"
+  },
+  {
+    "destinationTable": "TransactionKeyValue",
+    "displayFormat": "{_id} - {first_name} {last_name}",
+    "displayTitle": "User ID the data is for",
+    "displayType": "select",
+    "key": "User of Record",
+    "metaID": "user-of-record",
+    "queryDependency": {
+      "project_id": "project"
+    },
+    "queryFields": [
+      "first_name",
+      "last_name",
+      "_id"
+    ],
+    "sourceTable": "users",
+    "value": "",
+    "valueField": "_id"
+  },
+  {
+    "destinationTable": "NothingReally",
+    "directoryOrder": 0,
+    "displayFormat": "Project ID {_id}",
+    "displayType": "directoryTree",
+    "metaID": "directory-project",
+    "queryDependency": {
+      "_id": "project"
+    },
+    "queryFields": [
+      "_id"
+    ],
+    "sourceTable": "projects",
+    "value": "",
+    "valueField": "_id"
+  },
+  {
+    "destinationTable": "TransactionKeyValue",
+    "key": "proxymod.task",
+    "value": "advance"
+  },
+  {
+    "destinationTable": "TransactionKeyValue",
+    "key": "proxymod.version",
+    "value": "v0.0.1"
+  },
+  {
+    "destinationTable": "TransactionKeyValue",
+    "key": "proxymod.configs_count",
+    "value": "3"
+  },
+  {
+    "destinationTable": "TransactionKeyValue",
+    "key": "proxymod.config_1.PROJECT.runtime",
+    "value": "2"
+  },
+  {
+    "destinationTable": "TransactionKeyValue",
+    "key": "proxymod.config_1.PROJECT.failure",
+    "value": "0"
+  },
+  {
+    "destinationTable": "TransactionKeyValue",
+    "key": "proxymod.config_1.INPUTS.in_dir",
+    "value": "inputs/"
+  },
+  {
+    "destinationTable": "TransactionKeyValue",
+    "key": "proxymod.config_1.INPUTS.in_file_one",
+    "value": "in_file_one.csv"
+  },
+  {
+    "destinationTable": "TransactionKeyValue",
+    "key": "proxymod.config_1.INPUTS.in_file_two",
+    "value": "in_file_two.csv"
+  },
+  {
+    "destinationTable": "TransactionKeyValue",
+    "key": "proxymod.config_1.OUTPUTS.out_dir",
+    "value": "outputs/"
+  },
+  {
+    "destinationTable": "TransactionKeyValue",
+    "key": "proxymod.config_2.PROJECT.runtime",
+    "value": "2"
+  },
+  {
+    "destinationTable": "TransactionKeyValue",
+    "key": "proxymod.config_2.PROJECT.failure",
+    "value": "0"
+  },
+  {
+    "destinationTable": "TransactionKeyValue",
+    "key": "proxymod.config_2.OUTPUTS.out_dir",
+    "value": "outputs/"
+  },
+  {
+    "destinationTable": "TransactionKeyValue",
+    "key": "proxymod.config_3.PROJECT.runtime",
+    "value": "5"
+  },
+  {
+    "destinationTable": "TransactionKeyValue",
+    "key": "proxymod.config_3.PROJECT.failure",
+    "value": "0"
+  },
+  {
+    "destinationTable": "TransactionKeyValue",
+    "key": "proxymod.config_3.OUTPUTS.out_dir",
+    "value": "outputs/"
+  }
+]

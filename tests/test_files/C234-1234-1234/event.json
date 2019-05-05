@@ -30,6 +30,11 @@
     },
     {
       "destinationTable": "TransactionKeyValue",
+      "key": "proxymod.configs_count",
+      "value": "3"
+    },
+    {
+      "destinationTable": "TransactionKeyValue",
       "key": "proxymod.config_1.PROJECT.runtime",
       "value": "2"
     },

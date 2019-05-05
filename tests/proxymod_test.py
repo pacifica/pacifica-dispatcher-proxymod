@@ -11,6 +11,7 @@
 import json
 import os
 import unittest
+from collections import namedtuple
 
 from mock import patch
 from cloudevents.model import Event
@@ -84,17 +85,21 @@ class ProxTestCase(unittest.TestCase):
     @patch('pacifica.dispatcher_proxymod.event_handlers._to_proxymod_config_by_config_id')
     def test_bad_configs_exception(self, config_id_method):
         """Test bad config files throw exceptions properly."""
+        TKV = namedtuple('TKV', ['key', 'value'])
         config_id_method.return_value = {'config_1': {}}
         with self.assertRaises(ConfigNotFoundProxEventHandlerError) as cnx_mgr:
             _assert_valid_proxevent({}, self.event_data)
             self.assertTrue('proxymod configuration' in str(cnx_mgr.exception))
             self.assertTrue('config_2' in str(cnx_mgr.exception))
-            self.assertTrue('not found' in str(cnx_mgr.exception))
+        with self.assertRaises(ConfigNotFoundProxEventHandlerError) as cnx_mgr:
+            _assert_valid_proxevent([TKV(key='proxymod.configs_count', value='27')], self.event_data)
+            self.assertTrue('proxymod configuration' in str(cnx_mgr.exception))
+            self.assertTrue('config_2' in str(cnx_mgr.exception))
         config_id_method.return_value = {'config_1': {'foo': {}}, 'config_2': {}, 'config_3': {}}
         with self.assertRaises(InvalidConfigProxEventHandlerError) as cnx_mgr:
-            _assert_valid_proxevent({}, self.event_data)
+            _assert_valid_proxevent([TKV(key='proxymod.configs_count', value='2')], self.event_data)
             self.assertTrue('proxymod configuration' in str(cnx_mgr.exception))
-            self.assertTrue('runtime' in str(cnx_mgr.exception))
+            self.assertTrue('config_1' in str(cnx_mgr.exception))
             self.assertTrue('is invalid' in str(cnx_mgr.exception))
 
 
