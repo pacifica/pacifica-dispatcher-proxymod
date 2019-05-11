@@ -108,6 +108,16 @@ env DATABASE_URL="sqliteext:///db.sqlite3" env/bin/python3 -m "pacifica.dispatch
 
 10. The Web server is now running at http://127.0.0.1:8069/.
 
+## Standup Required Services
+
+The services required to properly upload/download data and send/receive events are available in the
+`docker-compose.yml` file. To start up the infrastructure required to test run the following locally.
+
+```
+docker-compose pull
+docker-compose up -d
+```
+
 ## Subscription Guide
 
 Subscriptions to the Pacifica notifications service require a notifications URL and may contain some authentication.
