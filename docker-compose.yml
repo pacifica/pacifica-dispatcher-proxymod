@@ -1,40 +1,192 @@
-version: '3.3'
+---
+version: "3.2"
+volumes:
+    archivedata:
+    cartshared:
+    ingestshared:
+    metadata:
+    uniqueiddata:
+
 services:
-  frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile.uwsgi
+  ingestamqp:
+    image: rabbitmq:3.7
+  cartamqp:
+    image: rabbitmq:3.7
+  notifyamqp:
+    image: rabbitmq:3.7
+
+  cartdb:
+    image: postgres:9.6
+    environment:
+      POSTGRES_DB: pacifica_cart
+      POSTGRES_USER: cartd
+      POSTGRES_PASSWORD: cartd
+
+  notifydb:
+    image: postgres:9.6
+    environment:
+      POSTGRES_DB: pacifica_notify
+      POSTGRES_USER: notify
+      POSTGRES_PASSWORD: notify
+
+  ingestdb:
+    image: postgres:9.6
+    environment:
+      POSTGRES_DB: pacifica_ingest
+      POSTGRES_USER: ingest
+      POSTGRES_PASSWORD: ingest
+
+  uniqueiddb:
+    image: postgres:9.6
+    environment:
+      POSTGRES_DB: pacifica_uniqueid
+      POSTGRES_USER: uniqueid
+      POSTGRES_PASSWORD: uniqueid
+    volumes:
+      - uniqueiddata:/var/lib/postgresql/data
+
+  metadatadb:
+    image: postgres:9.6
+    environment:
+      POSTGRES_PASSWORD: pacifica
+      POSTGRES_DB: pacifica_metadata
+      POSTGRES_USER: pacifica
+    volumes:
+      - metadata:/var/lib/postgresql/data
+
+  archiveinterface:
+    image: pacifica/archiveinterface:v0.2.0
+    ports:
+      - 8080:8080
+    volumes:
+      - archivedata:/srv
+
+  cartbackend:
+    image: pacifica/cartd-backend:v0.3.7
     links:
-    - rabbit
-    - mysql
-    ports:
-    - 8069:8069
+      - cartamqp
+      - cartdb
+      - archiveinterface
+    volumes:
+      - cartshared:/shared
     environment:
-      BROKER_URL: pyamqp://guest:guest@rabbit:5672/
-      DATABASE_URL: mysql://proxymod:proxymod@127.0.0.1:3306/pacifica_dispatcher_proxymod
+      VOLUME_PATH: /shared/
+      LRU_BUFFER_TIME: 0
+      PEEWEE_DATABASE_URL: postgres://cartd:cartd@cartdb/pacifica_cart
+      BROKER_URL: pyamqp://guest:guest@cartamqp:5672//
+      ARCHIVE_INTERFACE_URL: http://archiveinterface:8080/
 
-  backend:
-    build:
-      context: .
-      dockerfile: Dockerfile.celery
+  cartfrontend:
+    image: pacifica/cartd-frontend:v0.3.7
+    ports:
+      - 8081:8081
     links:
-     - rabbit
-     - mysql
+      - cartamqp
+      - cartdb
+      - archiveinterface
+    volumes:
+      - cartshared:/shared
     environment:
-      BROKER_URL: pyamqp://guest:guest@rabbit:5672/
-      DATABASE_URL: mysql://proxymod:proxymod@127.0.0.1:3306/pacifica_dispatcher_proxymod
+      VOLUME_PATH: /shared/
+      LRU_BUFFER_TIME: 0
+      PEEWEE_DATABASE_URL: postgres://cartd:cartd@cartdb/pacifica_cart
+      BROKER_URL: pyamqp://guest:guest@cartamqp:5672//
+      ARCHIVE_INTERFACE_URL: http://archiveinterface:8080/
 
-  mysql:
-    image: mysql:5
+  uniqueid:
+    image: pacifica/uniqueid:v0.3.3
+    links:
+      - uniqueiddb
+    ports:
+      - 8051:8051
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: pacifica_dispatcher_proxymod
-      MYSQL_USER: proxymod
-      MYSQL_PASSWORD: proxymod
-    ports:
-     - 3306:3306
+      PEEWEE_DATABASE_URL: postgres://uniqueid:uniqueid@uniqueiddb/pacifica_uniqueid
 
-  rabbit:
-    image: rabbitmq
+  metadataserver:
+    image: pacifica/metadata:v0.10.0
+    links:
+      - metadatadb
+      - notifyfrontend
     ports:
-     - 5672:5672
+      - 8121:8121
+    environment:
+      NOTIFICATIONS_URL: http://notifyfrontend:8070/receive
+      PEEWEE_DATABASE_URL: postgres://pacifica:pacifica@metadatadb/pacifica_metadata
+
+  policyserver:
+    image: pacifica/policy:v0.6.0
+    links:
+      - metadataserver
+      - elasticdb
+    ports:
+      - 8181:8181
+    environment:
+      ELASTIC_ENDPOINT: http://elasticdb:9200
+      ADMIN_USER_ID: 10
+      METADATA_URL: http://metadataserver:8121
+      STATUS_URL: http://metadataserver:8121/groups
+
+  ingestbackend:
+    image: pacifica/ingest-backend:v0.3.3
+    links:
+      - ingestamqp
+      - ingestdb
+      - archiveinterface
+      - uniqueid
+      - policyserver
+      - metadataserver
+    volumes:
+      - ingestshared:/shared
+    environment:
+      VOLUME_PATH: /shared
+      PEEWEE_DATABASE_URL: postgres://ingest:ingest@ingestdb/pacifica_ingest
+      BROKER_URL: pyamqp://guest:guest@ingestamqp:5672//
+      UNIQUEID_URL: http://uniqueid:8051
+      POLICY_INGEST_URL: http://policyserver:8181/ingest
+      METADATA_INGEST_URL: http://metadataserver:8121/ingest
+      ARCHIVEINTERFACE_URL: http://archiveinterface:8080
+
+  ingestfrontend:
+    image: pacifica/ingest-frontend:v0.3.3
+    ports:
+      - 8066:8066
+    links:
+      - ingestamqp
+      - ingestdb
+      - archiveinterface
+      - uniqueid
+      - policyserver
+      - metadataserver
+    volumes:
+      - ingestshared:/shared
+    environment:
+      VOLUME_PATH: /shared
+      PEEWEE_DATABASE_URL: postgres://ingest:ingest@ingestdb/pacifica_ingest
+      BROKER_URL: pyamqp://guest:guest@ingestamqp:5672//
+      UNIQUEID_URL: http://uniqueid:8051
+      POLICY_INGEST_URL: http://policyserver:8181/ingest
+      METADATA_INGEST_URL: http://metadataserver:8121/ingest
+      ARCHIVEINTERFACE_URL: http://archiveinterface:8080
+
+  notifyfrontend:
+    image: pacifica/notifications-frontend:v0.3.2
+    links:
+      - notifydb
+      - notifyamqp
+    ports:
+      - 8070:8070
+    environment:
+      PEEWEE_DATABASE_URL: postgres://notify:notify@notifydb/pacifica_notify
+      BROKER_URL: pyamqp://guest:guest@notifyamqp:5672//
+      POLICY_URL: http://policyserver:8181
+
+  notifybackend:
+    image: pacifica/notifications-backend:v0.3.2
+    links:
+      - notifydb
+      - notifyamqp
+      - policyserver
+    environment:
+      PEEWEE_DATABASE_URL: postgres://notify:notify@notifydb/pacifica_notify
+      BROKER_URL: pyamqp://guest:guest@notifyamqp:5672//
+      POLICY_URL: http://policyserver:8181
